@@ -1,0 +1,12 @@
+flask
+groq 
+langchain_community 
+qdrant_client 
+langchain_groq 
+langchain_qdrant 
+pypdfium2
+python-dotenv
+flask
+fastembed
+sentence-transformers
+gunicorn 

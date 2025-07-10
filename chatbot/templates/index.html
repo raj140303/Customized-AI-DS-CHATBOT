@@ -1,0 +1,51 @@
+import os
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+from logger import CustomLogger  # Ensure logger.py exists and works
+from chatbot import Chatbot      # Ensure __init__.py and Chatbot class work
+
+def create_app():
+    """Create and configure the Flask application."""
+    app = Flask(__name__)
+    app.secret_key = os.urandom(24)  # Needed by Flask
+
+    logger = CustomLogger().get_logger()  # Initialize custom logger
+    groq_api_key = os.getenv("GROQ_API_KEY")  # Load from env variable
+
+    @app.route('/', methods=['GET'])
+    def index():
+        """Redirect to chat if API key is set; else show error."""
+        if not groq_api_key:
+            logger.error("GROQ_API_KEY not set in environment.")
+            return "<h3>Error: GROQ_API_KEY is not set in the environment.</h3>", 500
+        return redirect(url_for('chat'))
+
+    @app.route('/chat')
+    def chat():
+        """Render the chat interface."""
+        if not groq_api_key:
+            return redirect(url_for('index'))
+        return render_template('chat.html')
+
+    @app.route('/ask', methods=['POST'])
+    def ask():
+        """Handle user questions and return responses."""
+        question = request.json.get('question')
+        print("DEBUG: Received question ->", question)
+        try:
+            if not groq_api_key:
+                return jsonify({"response": "API Key is not configured."}), 500
+
+            chatbot_instance = Chatbot(groq_api_key)
+            response = chatbot_instance.ask(question)
+            logger.info(f"User asked: {question}")
+            return jsonify({"response": response})
+        except Exception as e:
+            logger.error(f"Error processing question '{question}': {e}")
+            return jsonify({"response": "An error occurred while processing your request."}), 500
+
+    @app.route('/logout', methods=['POST'])
+    def logout():
+        """Optional logout route, does nothing now."""
+        return redirect(url_for('index'))
+
+    return app
