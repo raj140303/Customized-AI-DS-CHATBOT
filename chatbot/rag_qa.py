@@ -8,15 +8,15 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 def load_rag_chain(api_key: str):
     # Load knowledge base
-    loader = TextLoader("knowledge/ai_ds_knowledge.txt", encoding='utf-8')  # Fixed encoding
+    loader = TextLoader("knowledge/ai_ds_knowledge.txt", encoding='utf-8')
     documents = loader.load()
 
     # Split into chunks
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = text_splitter.split_documents(documents)
 
-    # Create embeddings and vectorstore
-    embeddings = HuggingFaceEmbeddings()
+    # Create embeddings with lightweight model
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vectorstore = FAISS.from_documents(chunks, embeddings)
 
     # Create retriever
