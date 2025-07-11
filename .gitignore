@@ -6,3 +6,4 @@ app.log  # If you are logging to a file, you might want to ignore it too.
 ./chatbot-env
 /chatbot-env
 /logs
+vectorstore_db/
